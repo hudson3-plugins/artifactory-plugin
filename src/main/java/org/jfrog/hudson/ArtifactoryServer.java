@@ -117,7 +117,10 @@ public class ArtifactoryServer implements Serializable {
                         "Could not obtain local repositories list from '" + url + "': " + e.getMessage());
             }
             return Lists.newArrayList();
-        } finally {
+        } catch(IllegalArgumentException e) {
+        	return Lists.newArrayList();
+        }
+        finally {
             client.shutdown();
         }
         return repositories;
@@ -230,10 +233,11 @@ public class ArtifactoryServer implements Serializable {
         ArtifactoryBuildInfoClient client = new ArtifactoryBuildInfoClient(url, userName, password, new NullLog());
         client.setConnectionTimeout(timeout);
         if (!bypassProxy && proxyConfiguration != null) {
-            client.setProxyConfiguration(proxyConfiguration.host,
-                    proxyConfiguration.port,
-                    proxyConfiguration.username,
-                    proxyConfiguration.password);
+        	if (proxyConfiguration.host != null && proxyConfiguration.port != 0)
+        		client.setProxyConfiguration(proxyConfiguration.host,
+        				proxyConfiguration.port,
+        				proxyConfiguration.username,
+        				proxyConfiguration.password);
         }
 
         return client;
@@ -262,8 +266,9 @@ public class ArtifactoryServer implements Serializable {
                 new JenkinsBuildInfoLog(listener));
         client.setConnectionTimeout(timeout);
         if (!bypassProxy && proxyConfiguration != null) {
-            client.setProxyConfiguration(proxyConfiguration.host, proxyConfiguration.port, proxyConfiguration.username,
-                    proxyConfiguration.password);
+        	if (proxyConfiguration.host != null && proxyConfiguration.port != 0)
+        		client.setProxyConfiguration(proxyConfiguration.host, proxyConfiguration.port, proxyConfiguration.username,
+        				proxyConfiguration.password);
         }
 
         return client;
